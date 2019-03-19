@@ -16,6 +16,19 @@ y = data[:,3]
 #deleta 4ª coluna do data
 data = np.delete(data, 3, axis=1)
 
-x = pd.DataFrame(data)
-x = x.interpolate(data)
-x = np.array(x)
+
+#remove colunas com excesso de valores invalidos
+for i in range(data.shape[1]-1,-1,-1):
+	if np.count_nonzero(data[:,i]==-200) > int(0.1*data.shape[0]):
+		data = np.delete(data,i,axis=1)
+
+
+#atualiza valores invalidos
+for i in range(data.shape[1]):
+	avg = np.mean(data[np.nonzero(data[:,i] != -200), i])
+	data[np.nonzero(data[:,i] == -200), i] = avg
+
+#salva o arquivo limpo
+finalData = np.insert(data, data.shape[1], y, axis=1)
+np.savetxt('AirQFinal.cvs', finalData, delimiter=';', fmt='%f')
+
