@@ -13,7 +13,7 @@ data_origin = data
 
 data = np.where(data=='Iris-setosa',0, data)
 data = np.where(data=='Iris-virginica',1, data)
-data = np.where(data=='Iris-versicolor',1, data)
+data = np.where(data=='Iris-versicolor',2, data)
 
 data = data.astype(np.float)
 
