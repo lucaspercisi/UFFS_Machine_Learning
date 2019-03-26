@@ -1,3 +1,5 @@
+#https://archive.ics.uci.edu/ml/index.php
+
 import numpy as np
 import pandas as pd
 import sklearn as skl
@@ -33,35 +35,9 @@ regression = LogisticRegression(random_state=0, solver='lbfgs', \
 
 
 pred_tr = regression.predict(training_x)
+
+print('   Taxa de acerto (treino):', np.mean(pred_tr==training_y))
+
 pred_te = regression.predict(test_x)
 
-
-
-#exclui todas linhas vazias do final do arquivo
-#data = data[:np.nonzero(data=='')[0][0],:]
-
-#converte toda a tabela em float substituindo virgulas por pontos.
-#data = np.char.replace(data,',','.').astype(np.float)
-
-#salva 4ª coluna
-#y = data[:,3]
-
-#deleta 4ª coluna do data
-#data = np.delete(data, 3, axis=1)
-
-
-#remove colunas com excesso de valores invalidos
-#for i in range(data.shape[1]-1,-1,-1):
-#	if np.count_nonzero(data[:,i]==-200) > int(0.1*data.shape[0]):
-#		data = np.delete(data,i,axis=1)
-
-
-#atualiza valores invalidos
-#for i in range(data.shape[1]):
-#	avg = np.mean(data[np.nonzero(data[:,i] != -200), i])
-#	data[np.nonzero(data[:,i] == -200), i] = avg
-
-#salva o arquivo limpo
-#finalData = np.insert(data, data.shape[1], y, axis=1)
-#np.savetxt('AirQFinal.cvs', finalData, delimiter=';', fmt='%f')
-
+print('   Taxa de acerto (teste):', np.mean(pred_te==test_y))
