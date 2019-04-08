@@ -1,6 +1,18 @@
+from __future__ import print_function
+
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import classification_report
+from sklearn.svm import SVC
+
+##########################################################
+
+
 import numpy as np
 import pandas as pd
 from sklearn import linear_model
+from sklearn.model_selection import train_test_split
 
 #>50K, <=50K. 
 #0  age: continuous. 
@@ -18,59 +30,93 @@ from sklearn import linear_model
 #12 hours-per-week: continuous. 
 #13 native-country: United-States, Cambodia, England, Puerto-Rico, Canada, Germany, Outlying-US(Guam-USVI-etc), India, Japan, Greece, South, China, Cuba, Iran, Honduras, Philippines, Italy, Poland, Jamaica, Vietnam, Mexico, Portugal, Ireland, France, Dominican-Republic, Laos, Ecuador, Taiwan, Haiti, Columbia, Hungary, Guatemala, Nicaragua, Scotland, Thailand, Yugoslavia, El-Salvador, Trinadad&Tobago, Peru, Hong, Holand-Netherlands."""
 
-
 data = np.loadtxt("adult.data", delimiter=",", dtype='str')
 
-print(pd.value_counts(data[:,0]))
-
+# substitui todos '?' pela atributo de maior incidência na coluna com excessão da ultima coluna
 for i in range(data.shape[1] - 1):
 	coluna = data[:,i]
 	atributos = pd.value_counts(coluna)
 	data[data[:,i]==' ?', i] = atributos.idxmax()
 
+print(data[0,0], data[0,0].isdigit(), type(data[0,0]))
+print(data[0,3], data[0,3].isdigit(), type(data[0,3]))
+
+for i in range(data.shape[1]-1):
+	coluna = np.unique(data[:, i])
+	if not coluna[0].isdigit():
+		for j in range(coluna.shape[0]):
+			data[data[:,i] == coluna[j], i] = j
+
+# workclass = np.unique(data[:, 1])
+# for i in range(workclass.shape[0]):
+# 	data[data[:, 1] == workclass[i], 1] = i
+# #
+# education = np.unique(data[:, 3])
+# for i in range(education.shape[0]):
+# 	data[data[:, 3] == education[i], 3] = i
+#
+# marital = np.unique(data[:, 5])
+# for i in range(marital.shape[0]):
+# 	data[data[:, 5] == marital[i], 5] = i
+#
+# occupation = np.unique(data[:, 6])
+# for i in range(occupation.shape[0]):
+# 	data[data[:, 6] == occupation[i], 6] = i
+#
+# relationship = np.unique(data[:, 7])
+# for i in range(relationship.shape[0]):
+# 	data[data[:, 7] == relationship[i], 7] = i
+#
+# race = np.unique(data[:, 8])
+# for i in range(race.shape[0]):
+# 	data[data[:, 8] == race[i], 8] = i
+#
+# sex = np.unique(data[:, 9])
+# for i in range(sex.shape[0]):
+# 	data[data[:, 9] == sex[i], 9] = i
+#
+# native = np.unique(data[:, 13])
+# for i in range(native.shape[0]):
+# 	data[data[:, 13] == native[i], 13] = i
 
 
+Y = data[:,-1] #separa os rotulos
+X = data[:,:-1] #remove os rotulos dos dados
 
+# mapeia os rotulos
+u = np.unique(Y)
+np.place(Y, Y == u[0], 1)
+np.place(Y, Y == u[1], 2)
 
+train_data = int(data.shape[0]*0.7)
 
+#separa e converte dados de treino
+xtr = X[:train_data,:].astype(np.int)
+ytr = Y[:train_data].astype(np.int)
 
+#separa e converte dados de teste
+xte = X[train_data:,:].astype(np.int)
+yte = Y[train_data:].astype(np.int)
 
+#Constroi a regressao logistica com os dados de trieno
+model = linear_model.LogisticRegressionCV(max_iter=10000, refit=False, n_jobs=-1,
+									  solver='liblinear', random_state=1008, penalty='l1').fit(xtr, ytr)
 
+#faz a previsão com os dados de teste
+y_hat = model.predict(xte)
 
+#informe o erro com os rotulos separados.
+print('Taxa de acerto (teste):', np.mean(y_hat == yte))
 
-
-
-
-
-
-
-
-#data = np.place(data[:,-1:], data[:,-1:] == y[0], 0)
-#data = np.place(data[:,-1:], data[:,-1:] == y[1], 1)
-
-#y = data[:,-1:]
-
-#avg = np.mean(data[data[:,3]!='?',3].astype(np.float))
-
-#data[data[:,3]=='?', 3] = avg	
-
-#x = data[:,1:].astype(np.float)
-#y = data[:,0].astype(np.float)
-
-
-#tam = int(data.shape[0]*0.7)
-
-#xtr = x[:tam, :]
-#ytr = y[:tam]
-
-#xte = x[tam:, :]
-#yte = y[tam:]
-
-#reg = linear_model.LinearRegression()
-#reg.fit(xtr, ytr)
-
-#y_pred = reg.predict(xte)
-
-#print((abs(y_pred - yte).sum())/len(yte))
-
-	
+###########################################################################
+###########################################################################
+# model = linear_model.LogisticRegressionCV()
+# parameters = {'solver':['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
+# 			  'fit_intercept':[True,False], 'max_iter':[1000, 10000, 100], 'refit':[True,False],
+# 			  'intercept_scaling':[1,10,100,1000], 'multi_class':['ovr','auto'],'n_jobs':[-1]}
+# grid = GridSearchCV(model,parameters, cv=None)
+#
+# grid.fit(xtr, ytr)
+#
+# print ("Melhor resultado: ", grid.best_score_)
+# print("Residual sum of squares: %.2f" % np.mean((grid.predict(X_test) - y_test) ** 2))
